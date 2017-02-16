@@ -3,7 +3,7 @@ from scipy.stats import *
 
 
 def gof(x, k, dist):
-	# Compute equaly probably chunks
+	# Compute equally probably chunks
 	cuts = dist.ppf(np.linspace(0, 1, k + 1))
 	# Count the number of occurrences in each chunk
 	f_obs, edges = np.histogram(x, bins=cuts)
@@ -27,7 +27,10 @@ def test_dist(N, R, K, alpha, dist):
 	print("------ Test of {} distribution ------".format(name))
 	print("H0 should be rejected if X^2 < {:.2f} or X^2 > {:.2f}".format(
 		crit_min, crit_max))
-	print("mean(X^2) = {:.2f}".format(np.mean(r)))
+	chi_mean = np.mean(r)
+	pvalue = 1 - chi2.cdf(chi_mean, K-1)
+	print("mean(X^2) = {:.2f}".format(chi_mean))
+	print("p-value = {:.4f}".format(pvalue))
 
 
 N = 500				# Size of each sample
