@@ -1,8 +1,6 @@
 # SMDE FIRST ASSIGNEMENT (20% OF THE FINAL MARK, INDIVIDUAL)
 
 
----
-
 ## First question: generate a random sample.
 
 On this exercise we are going to start working with probability distributions. The first
@@ -149,8 +147,6 @@ We see that only one simulation produced a result with a p-value under 0.05, so
 we should reject that sample. It is expected about 5% of the runs to be 
 incorrectly rejected.
 
----
-
 ## Second question: compare three samples.
 
 Generate three populations that follow your specific distribution, but now
@@ -170,12 +166,68 @@ Analyze and explain the results obtained. Justify your answers.
 Using the normal distribution, with mean 10, 20 and 30, we generate 3 samples
 with 1000 elements. Then 3 tests are performed:
 
-Shapiro-Wilk tests the normality of the samples. Durbin-Watson tests the
-independence of the samples. And Studentized Breusch-Pagan tests the homogeneity
-of the samples, if they have the same variance.
+The ANOVA test is based in 3 assumptions. All the populations should be normal 
+so a Shaphiro test is performed. All the observations must be independent, so a 
+Durbit Watson test is performed. And the samples must have the same variance, so 
+a Breusch Pagan test is performed.
+
+If all of the three tests pass, then the ANOVA test can proceed. Every test is 
+checked by it's p-value. If is less than alpha (0.05) the significance level, 
+the test is assumed as failed. The example code produces:
+
+	[1] "Shapiro-Wilk normality test passed."
+	[1] "Durbin-Watson test passed."
+	[1] "Studentized Breusch-Pagan test passed."
 
 After the 3 tests are passed, we can use ANOVA, to test if the populations are
 different.
+
+	$ Rscript src/2.R
+	Loading required package: zoo
+
+	Attaching package: ‘zoo’
+
+	The following objects are masked from ‘package:base’:
+
+	    as.Date, as.Date.numeric
+
+
+		Shapiro-Wilk normality test
+
+	data:  residuals(anova)
+	W = 0.99938, p-value = 0.4379
+
+	[1] "Shapiro-Wilk normality test passed."
+
+		Durbin-Watson test
+
+	data:  anova
+	DW = 1.9879, p-value = 0.727
+	alternative hypothesis: true autocorrelation is not 0
+
+	[1] "Durbin-Watson test passed."
+
+		studentized Breusch-Pagan test
+
+	data:  anova
+	BP = 0.013691, df = 1, p-value = 0.9069
+
+	[1] "Studentized Breusch-Pagan test passed."
+	[1] "The ANOVA test shows that the hypothesis of equal mean should be
+	rejected."
+		      Df Sum Sq Mean Sq F value Pr(>F)
+	k              1 200540  200540  187132 <2e-16 ***
+	Residuals   2998   3213       1
+	---
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+In the output, we can see the 3 tests with p-values greater than 0.05, so we
+consider the 3 asumptions met. The ANOVA test shows a very significant evidence 
+that the null hypothesis (the data has equal mean in all samples) should be 
+rejected. We finally accept the alternative hypothesis, and confirm that the 
+data don't have equal mean between samples, which is consistent with our samples 
+generated with different means.
+
 
 ## Third question: define a linear model for an athlete in the 1500 m.
 
@@ -195,8 +247,216 @@ Justify your answers.
 
 Remember to test the assumptions of the linear model.
 
-
 ---
+
+To import the dataset *decathlon*, I couldn't find the package 
+*RCmdrPlugin.FactoMinerR*:
+
+	> library('RCmdrPlugin.FactoMinerR')
+	Error in library("RCmdrPlugin.FactoMinerR") : there is no package called
+	‘RCmdrPlugin.FactoMinerR’
+
+	> install.packages('RCmdrPlugin.FactoMinerR')
+	Installing package into ‘/home/rodrigo/R/x86_64-pc-linux-gnu-library/3.3’
+	(as ‘lib’ is unspecified)
+	--- Please select a CRAN mirror for use in this session ---
+	Warning message:
+	package ‘RCmdrPlugin.FactoMinerR’ is not available (for R version 3.3.3)
+
+But the package *FactoMineR* provided the dataset, however the process of 
+downloading and compiling this package and all the depencies requires a 
+sustantial amount of time and resources.
+
+So instead of using this procedure, I decided to download the single dataset 
+from the *FactoMineR* [website](
+http://factominer.free.fr/classical-methods/datasets/decathlon.txt) and use only 
+that small file instead.
+
+	$ wget -qO data/decathlon.csv \
+	http://factominer.free.fr/classical-methods/datasets/decathlon.txt
+	$ md5sum data/decathlon.csv
+	7c14ba6f61e59c16cacb0d55624d39a4  data/decathlon.csv
+	$ head -1 data/decathlon.csv | tr '\t' '\n'
+	"100m"
+	"Long.jump"
+	"Shot.put"
+	"High.jump"
+	"400m"
+	"110m.hurdle"
+	"Discus"
+	"Pole.vault"
+	"Javeline"
+	"1500m"
+	"Rank"
+	"Points"
+	"Competition"
+
+Now we can read the file as a csv separated by tabs in R:
+
+	> decathlon = read.csv('data/decathlon.csv', sep='\t')
+	> summary(decathlon)
+	     X100m         Long.jump       Shot.put       High.jump         X400m
+	 Min.   :10.44   Min.   :6.61   Min.   :12.68   Min.   :1.850   Min.   :46.81
+	 1st Qu.:10.85   1st Qu.:7.03   1st Qu.:13.88   1st Qu.:1.920   1st Qu.:48.93
+	 Median :10.98   Median :7.30   Median :14.57   Median :1.950   Median :49.40
+	 Mean   :11.00   Mean   :7.26   Mean   :14.48   Mean   :1.977   Mean   :49.62
+	 3rd Qu.:11.14   3rd Qu.:7.48   3rd Qu.:14.97   3rd Qu.:2.040   3rd Qu.:50.30
+	 Max.   :11.64   Max.   :7.96   Max.   :16.36   Max.   :2.150   Max.   :53.20
+	  X110m.hurdle       Discus        Pole.vault       Javeline
+	 Min.   :13.97   Min.   :37.92   Min.   :4.200   Min.   :50.31
+	 1st Qu.:14.21   1st Qu.:41.90   1st Qu.:4.500   1st Qu.:55.27
+	 Median :14.48   Median :44.41   Median :4.800   Median :58.36
+	 Mean   :14.61   Mean   :44.33   Mean   :4.762   Mean   :58.32
+	 3rd Qu.:14.98   3rd Qu.:46.07   3rd Qu.:4.920   3rd Qu.:60.89
+	 Max.   :15.67   Max.   :51.65   Max.   :5.400   Max.   :70.52
+	     X1500m           Rank           Points       Competition
+	 Min.   :262.1   Min.   : 1.00   Min.   :7313   Decastar:13
+	 1st Qu.:271.0   1st Qu.: 6.00   1st Qu.:7802   OlympicG:28
+	 Median :278.1   Median :11.00   Median :8021
+	 Mean   :279.0   Mean   :12.12   Mean   :8005
+	 3rd Qu.:285.1   3rd Qu.:18.00   3rd Qu.:8122
+	 Max.   :317.0   Max.   :28.00   Max.   :8893
+
+We see that the columns that started with a number like "100m" had been prefixed 
+with a "X" like "X100m".
+
+To predict the behavior of an athlete for the 1500 m run, we can build a linear 
+model using all the variables, and see which ones provide more relationship to 
+the predicted variable (X1500m).
+
+	> rm1 = lm(X1500m ~ ., data=decathlon)
+
+	> summary(rm1)
+
+	Call:
+	lm(formula = X1500m ~ ., data = decathlon)
+
+	Residuals:
+	     Min       1Q   Median       3Q      Max
+	-1.11082 -0.40320 -0.02978  0.37054  0.99005
+
+	Coefficients:
+			      Estimate Std. Error t value Pr(>|t|)
+	(Intercept)          1.411e+03  2.281e+01  61.851   <2e-16 ***
+	X100m               -3.711e+01  6.090e-01 -60.937   <2e-16 ***
+	Long.jump            3.947e+01  6.635e-01  59.489   <2e-16 ***
+	Shot.put             9.984e+00  2.172e-01  45.972   <2e-16 ***
+	High.jump            1.470e+02  2.538e+00  57.931   <2e-16 ***
+	X400m               -7.680e+00  2.351e-01 -32.670   <2e-16 ***
+	X110m.hurdle        -1.951e+01  3.730e-01 -52.320   <2e-16 ***
+	Discus               3.461e+00  5.077e-02  68.184   <2e-16 ***
+	Pole.vault           4.855e+01  6.462e-01  75.127   <2e-16 ***
+	Javeline             2.442e+00  4.648e-02  52.533   <2e-16 ***
+	Rank                 3.099e-04  4.278e-02   0.007    0.994
+	Points              -1.632e-01  2.566e-03 -63.589   <2e-16 ***
+	CompetitionOlympicG  1.387e-01  5.532e-01   0.251    0.804
+	---
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+	Residual standard error: 0.5796 on 28 degrees of freedom
+	Multiple R-squared:  0.9983,	Adjusted R-squared:  0.9975
+	F-statistic:  1350 on 12 and 28 DF,  p-value: < 2.2e-16
+
+The column *Pr(>|t|)* provides information of the p-values of the hypothesis
+that the slope is zero. So we see that almost all rows reject the null
+hypothesis, those that have a p-value less than 0.05. So there is evidence that
+those variables are related with our predicted variable. However, *Rank* and
+*Points* don't present enought evidence to reject the null hypothesis, so the
+seem irrelevant.
+
+After removing those variables from our model, we test again.
+
+	> rm2 = lm(X1500m ~ X100m + Long.jump + Shot.put + High.jump + X400m +
+		X110m.hurdle + Discus + Pole.vault + Javeline + Points,
+		data=decathlon)
+
+	> summary(rm2)
+
+	Call:
+	lm(formula = X1500m ~ X100m + Long.jump + Shot.put + High.jump +
+	    X400m + X110m.hurdle + Discus + Pole.vault + Javeline + Points,
+	    data = decathlon)
+
+	Residuals:
+	     Min       1Q   Median       3Q      Max
+	-1.04641 -0.38236 -0.07186  0.39878  0.94814
+
+	Coefficients:
+		       Estimate Std. Error t value Pr(>|t|)
+	(Intercept)   1.409e+03  1.788e+01   78.81   <2e-16 ***
+	X100m        -3.721e+01  5.541e-01  -67.15   <2e-16 ***
+	Long.jump     3.934e+01  5.699e-01   69.03   <2e-16 ***
+	Shot.put      9.983e+00  2.074e-01   48.13   <2e-16 ***
+	High.jump     1.464e+02  2.090e+00   70.08   <2e-16 ***
+	X400m        -7.627e+00  1.926e-01  -39.60   <2e-16 ***
+	X110m.hurdle -1.947e+01  3.382e-01  -57.57   <2e-16 ***
+	Discus        3.451e+00  4.311e-02   80.05   <2e-16 ***
+	Pole.vault    4.839e+01  5.317e-01   91.00   <2e-16 ***
+	Javeline      2.434e+00  3.966e-02   61.38   <2e-16 ***
+	Points       -1.627e-01  1.789e-03  -90.99   <2e-16 ***
+	---
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+	Residual standard error: 0.5623 on 30 degrees of freedom
+	Multiple R-squared:  0.9983,	Adjusted R-squared:  0.9977
+	F-statistic:  1721 on 10 and 30 DF,  p-value: < 2.2e-16
+
+Now we see that all the variables present significant evidence to be related
+with our predicted variable *1500m*. Also we see the adjusted R-square to be
+0.9977 showing a good explanation. The residual error is 0.5623, much lower
+than the median of our predicted variable:
+
+	> summary(decathlon$X1500m)
+	   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+	  262.1   271.0   278.0   279.0   285.1   317.0
+
+The model could be overfitted, and we could be able to detect such situation by
+using a validation subset of the data, not used by the model. Then we could test
+again the validation subset. If the predicted values are far from the real ones,
+we see a overfitting situation.
+
+Lastly we need to test 3 assumptions of a linear model. The observations within
+each sample should be independent, so we use a Durbin Watson test.
+
+	> dwtest(rm2, alternative="two.sided")
+
+		Durbin-Watson test
+
+	data:  rm2
+	DW = 1.6852, p-value = 0.2082
+	alternative hypothesis: true autocorrelation is not 0
+
+And we cannot reject that the samples are independent, as the p-value is
+greater than 0.05. So we accept independence between observations.
+
+Also the populations should be normal, so we use the Shapiro test.
+
+	> shapiro.test(residuals(rm2))
+
+		Shapiro-Wilk normality test
+
+	data:  residuals(rm2)
+	W = 0.9769, p-value = 0.5604
+
+The p-value is again greater then the critical value, so we accept the
+hypothesis of normality.
+
+The last assumption is the homogeneity of the variance, and we can use the
+Breusch Pagan test.
+
+	> bptest(rm2)
+
+		studentized Breusch-Pagan test
+
+	data:  rm2
+	BP = 16.954, df = 10, p-value = 0.07539
+
+Again the test shows that there is no significant evidence against the null
+hypothesis, so we accept homogeneity of the variance.
+
+After these 3 assuptions, we can now use the linear model to predict the 1500 m
+column.
+
 
 ## Fourth question: use the model to predict the behavior of an athlete.
 

@@ -54,9 +54,9 @@ if(bp$p.value < alpha) {
 
 anova.pvalue = summary(anova)[[1]][["Pr(>F)"]][1]
 if(anova.pvalue < alpha) {
-	print("The ANOVA test indicates that the data has different mean.")
+	print("The ANOVA test shows that the hypothesis of equal mean should be rejected.")
 } else {
-	print("The ANOVA cannot confirm that the data has different mean.")
+	print("The ANOVA cannot reject that the data has equal mean.")
 }
 
 summary(anova)

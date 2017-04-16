@@ -1,13 +1,9 @@
-library("FactoMineR")
-library("plyr")
+decathlon = read.csv('data/decathlon.csv', sep='\t')
 
-data(decathlon, package="FactoMineR")
+# Use this line if you run this script in the src/ folder
+#decathlon = read.csv('../data/decathlon.csv', sep='\t')
 
-d = rename(decathlon, c("100m"="X100m", "400m"="X400m",
-	"110m.hurdle"="X110m.hurdle", "1500m"="X1500m"))
-
-
-rm1 = lm(X1500m ~ ., data=d)
+rm1 = lm(X1500m ~ ., data=decathlon)
 print(summary(rm1))
 
 # Coefficients:
@@ -34,9 +30,13 @@ print(summary(rm1))
 
 # Drop Rank and CompetitionOlympicG
 
-rm2 = lm(X1500m ~ X100m + Long.jump + Shot.put + High.jump + X400m + X110m.hurdle + Discus +
-	Pole.vault + Javeline + Points, data=d)
+rm2 = lm(X1500m ~ X100m + Long.jump + Shot.put + High.jump + X400m +
+	X110m.hurdle + Discus + Pole.vault + Javeline + Points,
+	data=decathlon)
+
 print(summary(rm2))
 
+#library("plyr")
+
 # Automatic selection of factors
-srm1 = step(rm1)
+#srm1 = step(rm1)
