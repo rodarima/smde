@@ -228,6 +228,55 @@ rejected. We finally accept the alternative hypothesis, and confirm that the
 data don't have equal mean between samples, which is consistent with our samples 
 generated with different means.
 
+### Once we are familiar with ANOVA, answer this question:
+
+On the dataset contained on FactoMiner package named geomorphology, we want
+to analyze if Drift is a factor that defines different block sizes (Block.size.median
+variable) or wind effects (variable Wind.effect).
+
+Useful code:
+
+	data(geomorphology, package="FactoMineR")
+
+---
+
+To load the dataset, I extracted just the file from FactoMineR, and its placed 
+under the `data/` directory. To load in R:
+
+	> load("data/geomorphology.rda")
+
+To see how the two variables are affected by `Drift`, we can use a boxplot.
+
+	> boxplot(Wind.effect~Drift, data=geomorphology)
+
+![Wind.effect](img/wind.png)
+
+	> boxplot(Block.size.median~Drift, data=geomorphology)
+
+![Block.size.median](img/size.png)
+
+As can be seen visually, the Wind.effect presents big differences in the data, 
+but in the case of Block.size.median, those differences are small.
+
+We can use ANOVA to test if the different samples have the same mean. So by 
+splitting the dataset using the variable Drift, we get:
+
+	> summary(aov(Wind.effect ~ Drift, data=geomorphology))
+		    Df Sum Sq Mean Sq F value   Pr(>F)    
+	Drift        5 0.2395 0.04790   10.07 2.86e-07 ***
+	Residuals   69 0.3280 0.00475                     
+	---
+	Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+	> summary(aov(Block.size.median ~ Drift, data=geomorphology))
+		    Df Sum Sq Mean Sq F value Pr(>F)
+	Drift        5    644   128.9   0.726  0.606
+	Residuals   69  12246   177.5
+
+It can be seen that the ANOVA test rejects the hypothesis of equal mean on the 
+first case, as expected. But is not capable of reject the null hypothesis on the 
+second case. So we assume that the Drift variable is related to the 
+`Wind.effect` but not to the `Block.size.median`.
 
 ## Third question: define a linear model for an athlete in the 1500 m.
 
@@ -488,6 +537,104 @@ Is the model accurate? What do you expect?
 Justify your answers.
 
 ---
+
+The model used included a lot of variables, so to predict the 1500m variable the 
+previous dataset is used, instead of generating new values.
+
+	> predict(rm2, interval='prediction')
+			 fit      lwr      upr
+	SEBRLE      292.0066 290.7438 293.2693
+	CLAY        301.9859 300.6310 303.3408
+	KARPOV      300.3589 299.0248 301.6930
+	BERNARD     280.0619 278.7843 281.3395
+	YURKOV      277.0376 275.7722 278.3030
+	WARNERS     278.0398 276.7627 279.3169
+	ZSIVOCZKY   267.7956 266.5379 269.0534
+	McMULLEN    285.3444 284.0518 286.6370
+	MARTINEAU   261.5713 260.1737 262.9690
+	HERNU       285.7091 284.3498 287.0685
+	BARRAS      282.5189 281.2675 283.7704
+	NOOL        265.9854 264.6799 267.2910
+	BOURGUIGNON 290.7519 289.4849 292.0188
+	Sebrle      279.4385 278.0950 280.7820
+	Clay        281.3249 279.9634 282.6865
+	Karpov      277.6027 276.2764 278.9290
+	Macey       265.1626 263.8823 266.4429
+	Warners     277.6955 276.4760 278.9150
+	Zsivoczky   269.9224 268.6690 271.1757
+	Hernu       264.6447 263.4317 265.8577
+	Nool        276.0050 274.7274 277.2826
+	Bernard     276.2963 275.0454 277.5472
+	Schwarzl    273.7283 272.4852 274.9714
+	Pogorelov   287.7318 286.4517 289.0119
+	Schoenbeck  279.3457 278.1058 280.5857
+	Barras      267.2389 265.9938 268.4839
+	Smith       272.8119 271.4591 274.1646
+	Averyanov   271.1589 269.8444 272.4735
+	Ojaniemi    276.3619 275.0453 277.6784
+	Smirnov     263.7110 262.4771 264.9448
+	Qi          273.6764 272.4481 274.9047
+	Drews       273.6660 272.3940 274.9379
+	Parkhomenko 277.8006 276.4639 279.1373
+	Terek       291.1114 289.7597 292.4631
+	Gomez       269.3012 267.9576 270.6448
+	Turi        289.6932 288.3392 291.0473
+	Lorenzo     262.6045 261.3245 263.8845
+	Karlivans   279.0893 277.8443 280.3342
+	Korkizoglou 316.4853 315.1394 317.8313
+	Uldal       282.0585 280.8272 283.2898
+	Casarsa     295.1854 293.8394 296.5314
+	Warning message:
+	In predict.lm(rm2, interval = "prediction") :
+	  predictions on current data refer to _future_ responses
+
+	> predict(rm2, interval='confidence')
+			 fit      lwr      upr
+	SEBRLE      292.0066 291.4815 292.5317
+	CLAY        301.9859 301.2670 302.7049
+	KARPOV      300.3589 299.6799 301.0379
+	BERNARD     280.0619 279.5021 280.6217
+	YURKOV      277.0376 276.5062 277.5690
+	WARNERS     278.0398 277.4812 278.5985
+	ZSIVOCZKY   267.7956 267.2827 268.3085
+	McMULLEN    285.3444 284.7511 285.9376
+	MARTINEAU   261.5713 260.7747 262.3679
+	HERNU       285.7091 284.9818 286.4365
+	BARRAS      282.5189 282.0216 283.0163
+	NOOL        265.9854 265.3644 266.6064
+	BOURGUIGNON 290.7519 290.2168 291.2869
+	Sebrle      279.4385 278.7412 280.1357
+	Clay        281.3249 280.5935 282.0563
+	Karpov      277.6027 276.9392 278.2662
+	Macey       265.1626 264.5966 265.7286
+	Warners     277.6955 277.2851 278.1059
+	Zsivoczky   269.9224 269.4204 270.4244
+	Hernu       264.6447 264.2541 265.0353
+	Nool        276.0050 275.4452 276.5649
+	Bernard     276.2963 275.8005 276.7921
+	Schwarzl    273.7283 273.2523 274.2042
+	Pogorelov   287.7318 287.1663 288.2973
+	Schoenbeck  279.3457 278.8781 279.8134
+	Barras      267.2389 266.7579 267.7198
+	Smith       272.8119 272.0970 273.5267
+	Averyanov   271.1589 270.5193 271.7986
+	Ojaniemi    276.3619 275.7181 277.0056
+	Smirnov     263.7110 263.2599 264.1620
+	Qi          273.6764 273.2407 274.1121
+	Drews       273.6660 273.1192 274.2128
+	Parkhomenko 277.8006 277.1165 278.4846
+	Terek       291.1114 290.3984 291.8243
+	Gomez       269.3012 268.6038 269.9987
+	Turi        289.6932 288.9759 290.4106
+	Lorenzo     262.6045 262.0392 263.1698
+	Karlivans   279.0893 278.6086 279.5699
+	Korkizoglou 316.4853 315.7834 317.1873
+	Uldal       282.0585 281.6144 282.5026
+	Casarsa     295.1854 294.4833 295.8874
+
+To test how 
+
+
 
 ## Five question: PCA
 
