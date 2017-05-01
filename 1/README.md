@@ -278,6 +278,66 @@ first case, as expected. But is not capable of reject the null hypothesis on the
 second case. So we assume that the Drift variable is related to the 
 `Wind.effect` but not to the `Block.size.median`.
 
+To accept the assumption, we need to check that the 3 assumptions for ANOVA are met. 
+First we test if the residuals follow a normal distribution:
+
+	> shapiro.test(residuals(aov_wind))
+
+		Shapiro-Wilk normality test
+
+	data:  residuals(aov_wind)
+	W = 0.95172, p-value = 0.006201
+
+	> shapiro.test(residuals(aov_size))
+
+		Shapiro-Wilk normality test
+
+	data:  residuals(aov_size)
+	W = 0.67066, p-value = 1.099e-11
+
+And see that none of them have a p-value greater than 0.05, so we reject the 
+null hypothesis that they came from a normal distribution. So we cannot give 
+significant evidence to our ANOVA model. The rest of the tests:
+
+	> dwtest(aov_size)
+
+		Durbin-Watson test
+
+	data:  aov_size
+	DW = 2.1729, p-value = 0.6759
+	alternative hypothesis: true autocorrelation is greater than 0
+
+	> dwtest(aov_wind)
+
+		Durbin-Watson test
+
+	data:  aov_wind
+	DW = 1.3944, p-value = 0.001379
+	alternative hypothesis: true autocorrelation is greater than 0
+
+
+	> bptest(aov_wind)
+
+		studentized Breusch-Pagan test
+
+	data:  aov_wind
+	BP = 5.0113, df = 5, p-value = 0.4145
+
+	> bptest(aov_size)
+
+		studentized Breusch-Pagan test
+
+	data:  aov_size
+	BP = 3.336, df = 5, p-value = 0.6483
+
+
+Only the Durbin-Watson test for the variabl Block.size.median is not passed. The 
+rest seem to met the assumptions.
+
+We cannot use the information in the ANOVA model, as the assumptions are not 
+met.
+
+
 ## Third question: define a linear model for an athlete in the 1500 m.
 
 To start: load the package RCmdrPlugin.FactoMinerR.
