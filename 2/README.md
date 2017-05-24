@@ -91,7 +91,7 @@ normal distribution.
 
 ## Simulate your data.
 
-1. Define, for each factor (from 1 to 5) a distribution (the RVGs that you prefer,
+1) Define, for each factor (from 1 to 5) a distribution (the RVGs that you prefer,
 uniform, normal, exponential, etc.). For the factors 6 to 10 define a function
 that uses the previous variables, as an example F6=F1+2F3.
 
@@ -117,7 +117,7 @@ that uses the previous variables, as an example F6=F1+2F3.
 
 
 
-2. Define an answer variable that will be composed by a function that combines
+2) Define an answer variable that will be composed by a function that combines
 a subset of the previous factors plus a normal distribution you know (to add
 some random noise).
 
@@ -134,7 +134,7 @@ Imagine that you don't know nothing regarding this dataset. You need to explore 
 because you want to define an expression to obtain new data for your DOE (you
 want to detect the possible relations and the interactions between the factors).
 
-1. Explore the possible relations of all the factors and the answer variable, you
+1) Explore the possible relations of all the factors and the answer variable, you
 can use any technique developed during the course.
 
 
@@ -168,7 +168,7 @@ can use any technique developed during the course.
 	F-statistic: 2.955e+06 on 5 and 994 DF,  p-value: < 2.2e-16
 
 
-2. Describe what you find on this analysis and, explain if it is coherent with the
+2) Describe what you find on this analysis and, explain if it is coherent with the
 knowledge you have from the data.
 
 The linear regresion finds linear relationships between the factors that produce 
@@ -241,7 +241,7 @@ Then, we can simplify the model to:
 	Multiple R-squared:  0.9999,    Adjusted R-squared:  0.9999
 	F-statistic: 2.955e+06 on 5 and 994 DF,  p-value: < 2.2e-16
 
-3. Propose an expression (using a LRM) to generate new data. This is the
+3) Propose an expression (using a LRM) to generate new data. This is the
 method that you are going to use to generate new values using a subset of
 the factors, for a more complex dataset one can use other approaches like
 Simulation.
@@ -268,13 +268,13 @@ Now you have an expression to generate new data (a simple method to obtain new
 values depending on the factors, the model). This model can be used to generate 
 data for the different scenarios that must be considered.
 
-1. Define a DOE to explore with what parametrization of the 10 factors the 
+1) Define a DOE to explore with what parametrization of the 10 factors the 
    answer obtains the best value (define what means best, i.e. maximize or 
    minimize the value).
 
 WIP
 
-2. Detect and analyze the interactions.
+2) Detect and analyze the interactions.
 
 WIP
 
