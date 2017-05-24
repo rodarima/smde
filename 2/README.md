@@ -96,6 +96,7 @@ uniform, normal, exponential, etc.). For the factors 6 to 10 define a function
 that uses the previous variables, as an example F6=F1+2F3.
 
 
+
 	> N = 1000
 	> SDERR = 0.1
 	>
@@ -115,13 +116,16 @@ that uses the previous variables, as an example F6=F1+2F3.
 	> err = rnorm(N, sd=SDERR)
 
 
+
 2. Define an answer variable that will be composed by a function that combines
 a subset of the previous factors plus a normal distribution you know (to add
 some random noise).
 
 
+
 	> ans = x1+x2+x3+x4+x5+x6+x7+x8+x9+x10+err
 	> d = data.frame(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,err,ans)
+
 
 
 ## OBTAIN AN EXPRESSION TO GENERATE NEW DATA.
