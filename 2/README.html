@@ -1,0 +1,427 @@
+<h1>SMDE Second assignment (30% of the final mark, individual)</h1>
+
+<p>Rodrigo Arias Mallo</p>
+
+<h2>DEFINE YOUR RNG. Select a RNG to use in your analysis.</h2>
+
+<ol>
+<li>Implement this RNG.</li>
+<li>Test the correctness of your RNG using at least two tests. You can implement
+your tests or can use the RNG tests implemented on R. Explain the main idea
+(is not needed to enter on the details) of the test selected.</li>
+</ol>
+
+<p>You can find a source of RNG here:
+http://wiki.fib.upc.es/sim/index.php/Main_Page/en
+You can implement this RNG on R on in the language you prefer. Remember that
+you can define your own functions in R like this:</p>
+
+<pre><code>My_RNG &lt;- function (x, seed=7) {
+#Do something
+return(x)
+}
+</code></pre>
+
+<p>Some useful code:</p>
+
+<pre><code>library(randtests)
+example = My_RNG(1000)
+bartels.rank.test(example)
+cox.stuart.test(example)
+difference.sign.test(example)
+rank.test(example)
+turning.point.test(example)
+</code></pre>
+
+<hr />
+
+<p>I choose the linear congruential generator, defined as:</p>
+
+<pre><code>lcg &lt;- function(x) {
+    m = 2**31
+
+    a = 1664525
+    c = 1013904223
+
+    return((x*a + c) %% m)
+}
+
+lcgsample &lt;- function(N, seed=7) {
+    v &lt;- rep(0, N)
+    x &lt;- seed
+    for (i in seq(1, N, 1)) {
+        x1 = lcg(x)
+        v[i] = x1
+        x = x1
+    }
+    return(v)
+}
+</code></pre>
+
+<p>Then I generate a sample of 1000 values:</p>
+
+<pre><code>&gt; r = lcgsample(1000)
+&gt; head(r)
+[1] 1025555898 1775940049  483148028 1833871403  211918734 1528078741
+</code></pre>
+
+<p>And we apply some tests to check the randomness of the data:</p>
+
+<pre><code>&gt; difference.sign.test(r)
+
+    Difference Sign Test
+
+data:  r
+statistic = 1.3686, n = 1000, p-value = 0.1711
+alternative hypothesis: nonrandomness
+
+
+&gt; turning.point.test(r)
+
+    Turning Point Test
+
+data:  r
+statistic = -1.3762, n = 1000, p-value = 0.1687
+alternative hypothesis: non randomness
+</code></pre>
+
+<p>The tests look for properties in the sample that a random sequenece should 
+follow.</p>
+
+<p>The Difference Sign Test measures the difference between each par of 
+observations. The number of pairs x,y with x bigger than y should follow a 
+binamial distribution.</p>
+
+<p>The Turning Point Test is based on the number of turning points. The turning 
+point in the number of maxima and minima in the sequence, and should follow a 
+normal distribution.</p>
+
+<h2>Simulate your data.</h2>
+
+<p>Define, for each factor (from 1 to 5) a distribution (the RVGs that you prefer,
+uniform, normal, exponential, etc.). For the factors 6 to 10 define a function
+that uses the previous variables, as an example F6=F1+2F3.</p>
+
+<pre><code>&gt; N = 1000
+&gt; SDERR = 0.1
+&gt;
+&gt; # Five standard normal distributions x1, x2, ... , x5
+&gt; x1 = rnorm(N)
+&gt; x2 = rnorm(N)
+&gt; x3 = rnorm(N)
+&gt; x4 = rnorm(N)
+&gt; x5 = rnorm(N)
+&gt;
+&gt; x6 = x1 + 2*x2
+&gt; x7 = x2 + 3*x3
+&gt; x8 = x3 + 4*x4
+&gt; x9 = x4 + 5*x5
+&gt; x10 = x1 + x2 + x3
+&gt;
+&gt; err = rnorm(N, sd=SDERR)
+</code></pre>
+
+<p>Define an answer variable that will be composed by a function that combines
+a subset of the previous factors plus a normal distribution you know (to add
+some random noise).</p>
+
+<pre><code>&gt; ans = x1+x2+x3+x4+x5+x6+x7+x8+x9+x10+err
+&gt; d = data.frame(x1,x2,x3,x4,x5,x6,x7,x8,x9,x10,err,ans)
+</code></pre>
+
+<h2>OBTAIN AN EXPRESSION TO GENERATE NEW DATA.</h2>
+
+<p>Imagine that you don't know nothing regarding this dataset. You need to explore it
+because you want to define an expression to obtain new data for your DOE (you
+want to detect the possible relations and the interactions between the factors).</p>
+
+<p>Explore the possible relations of all the factors and the answer variable, you
+can use any technique developed during the course.</p>
+
+<pre><code>&gt; summary(lm(ans~., data=d))
+
+Call:
+lm(formula = ans ~ ., data = d)
+
+Residuals:
+     Min       1Q   Median       3Q      Max
+-0.34970 -0.07170  0.00490  0.07345  0.29287
+
+Coefficients: (5 not defined because of singularities)
+         Estimate Std. Error  t value Pr(&gt;|t|)
+(Intercept) 0.0001376  0.0032283    0.043    0.966
+x1          3.0013728  0.0032904  912.164   &lt;2e-16 ***
+x2          4.9966413  0.0031628 1579.798   &lt;2e-16 ***
+x3          5.9984198  0.0032877 1824.500   &lt;2e-16 ***
+x4          5.9986435  0.0032541 1843.388   &lt;2e-16 ***
+x5          6.0001803  0.0032307 1857.217   &lt;2e-16 ***
+x6                 NA         NA       NA       NA
+x7                 NA         NA       NA       NA
+x8                 NA         NA       NA       NA
+x9                 NA         NA       NA       NA
+x10                NA         NA       NA       NA
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1021 on 994 degrees of freedom
+Multiple R-squared:  0.9999,    Adjusted R-squared:  0.9999
+F-statistic: 2.955e+06 on 5 and 994 DF,  p-value: &lt; 2.2e-16
+</code></pre>
+
+<p>Describe what you find on this analysis and, explain if it is coherent with the
+knowledge you have from the data.</p>
+
+<p>The linear regresion finds linear relationships between the factors that produce 
+the answer. It can be seen that only x1 to x5 seem to be significant. The 
+variables x6 to x10 are not defined (probably because they are linearly 
+dependent).</p>
+
+<p>We can test for each x6 to x10.</p>
+
+<pre><code>&gt; summary(lm(formula = x6 ~ ., data = d))
+
+Call:
+lm(formula = x6 ~ ., data = d)
+
+Residuals:
+       Min         1Q     Median         3Q        Max
+-4.957e-14 -2.060e-16 -1.300e-17  1.610e-16  7.229e-14
+
+Coefficients: (4 not defined because of singularities)
+          Estimate Std. Error    t value Pr(&gt;|t|)
+(Intercept)  6.451e-17  8.864e-17  7.280e-01    0.467
+x1           1.000e+00  2.615e-15  3.824e+14   &lt;2e-16 ***
+x2           2.000e+00  4.352e-15  4.595e+14   &lt;2e-16 ***
+x3           5.764e-15  5.225e-15  1.103e+00    0.270
+x4           5.760e-15  5.225e-15  1.102e+00    0.271
+x5           5.898e-15  5.226e-15  1.129e+00    0.259
+x7                  NA         NA         NA       NA
+x8                  NA         NA         NA       NA
+x9                  NA         NA         NA       NA
+x10                 NA         NA         NA       NA
+ans         -9.583e-16  8.709e-16 -1.100e+00    0.271
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 2.802e-15 on 993 degrees of freedom
+Multiple R-squared:      1,     Adjusted R-squared:      1
+F-statistic: 1.115e+32 on 6 and 993 DF,  p-value: &lt; 2.2e-16
+</code></pre>
+
+<p>And see clearly how is the relation. In the case of x6:</p>
+
+<pre><code>x6 = 1.0 * x1 + 2.0 * x2
+</code></pre>
+
+<p>An the same with x7, x8, x9 and x10.</p>
+
+<p>Then, we can simplify the model to:</p>
+
+<pre><code>&gt; m = lm(formula = ans ~ x1+x2+x3+x4+x5, data = d)
+&gt; summary(m)
+
+Call:
+lm(formula = ans ~ x1 + x2 + x3 + x4 + x5, data = d)
+
+Residuals:
+     Min       1Q   Median       3Q      Max
+-0.34970 -0.07170  0.00490  0.07345  0.29287
+
+Coefficients:
+         Estimate Std. Error  t value Pr(&gt;|t|)
+(Intercept) 0.0001376  0.0032283    0.043    0.966
+x1          3.0013728  0.0032904  912.164   &lt;2e-16 ***
+x2          4.9966413  0.0031628 1579.798   &lt;2e-16 ***
+x3          5.9984198  0.0032877 1824.500   &lt;2e-16 ***
+x4          5.9986435  0.0032541 1843.388   &lt;2e-16 ***
+x5          6.0001803  0.0032307 1857.217   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1021 on 994 degrees of freedom
+Multiple R-squared:  0.9999,    Adjusted R-squared:  0.9999
+F-statistic: 2.955e+06 on 5 and 994 DF,  p-value: &lt; 2.2e-16
+</code></pre>
+
+<p>Propose an expression (using a LRM) to generate new data. This is the
+method that you are going to use to generate new values using a subset of
+the factors, for a more complex dataset one can use other approaches like
+Simulation.</p>
+
+<pre><code>&gt; m
+
+Call:
+lm(formula = ans ~ x1 + x2 + x3 + x4 + x5, data = d)
+
+Coefficients:
+(Intercept)           x1           x2           x3           x4           x5  
+  0.0001376    3.0013728    4.9966413    5.9984198    5.9986435    6.0001803
+</code></pre>
+
+<p>The expression becomes:</p>
+
+<pre><code>ans = 0.0001376 + 3.0013728*x1 + 4.9966413*x2 + 5.9984198*x3 +
+    5.9986435*x4 + 6.0001803 * x5
+</code></pre>
+
+<h2>DOE</h2>
+
+<p>Now you have an expression to generate new data (a simple method to obtain new 
+values depending on the factors, the model). This model can be used to generate 
+data for the different scenarios that must be considered.</p>
+
+<p><em>Define a DOE to explore with what parametrization of the 10 factors the answer 
+obtains the best value (define what means best, i.e. maximize or minimize the 
+value).</em></p>
+
+<p><em>Detect and analyze the interactions.</em></p>
+
+<p>Let's imagine that our experiment is a chemical experiment. We have 10 compounds 
+in different quantities (the factors) and a result variable (ans) which measures 
+the quality of the final product. Let say we are building a phone screen, 
+varying the amounts of the components, and the quality is measured as the 
+resistance to impacts. The larger the answer variable the better, it means a 
+more durable phone.</p>
+
+<h3>Set the objectives.</h3>
+
+<p>Identify the main factors that determine the answer response.</p>
+
+<h3>Select the process variables.</h3>
+
+<p>The quantity of the 10 compounds from x1 to x10.</p>
+
+<h3>Define an experimental design.</h3>
+
+<p>A 2k experimental design as we have a simple model and we can generate the 
+response virtually free.</p>
+
+<h3>Execute the design.</h3>
+
+<p>Let be -1 and +1 the 2 extreme values for the factors, represented by - and +.</p>
+
+<p>To generate the combinations we can use the package "dae" in R.</p>
+
+<pre><code>&gt; library('dae')
+&gt; mp &lt;- c("-", "+")
+&gt; fnames &lt;- list(x1=mp, x2=mp, x3=mp, x4=mp, x5=mp, x6=mp,
+    x7=mp, x8=mp, x9=mp, x10=mp)
+&gt; treats &lt;- fac.gen(generate = fnames, order="yates")
+&gt; head(treats)
+  x1 x2 x3 x4 x5 x6 x7 x8 x9 x10
+1  -  -  -  -  -  -  -  -  -   -
+2  +  -  -  -  -  -  -  -  -   -
+3  -  +  -  -  -  -  -  -  -   -
+4  +  +  -  -  -  -  -  -  -   -
+5  -  -  +  -  -  -  -  -  -   -
+6  +  -  +  -  -  -  -  -  -   -
+&gt; tail(treats)
+     x1 x2 x3 x4 x5 x6 x7 x8 x9 x10
+1019  -  +  -  +  +  +  +  +  +   +
+1020  +  +  -  +  +  +  +  +  +   +
+1021  -  -  +  +  +  +  +  +  +   +
+1022  +  -  +  +  +  +  +  +  +   +
+1023  -  +  +  +  +  +  +  +  +   +
+1024  +  +  +  +  +  +  +  +  +   +
+</code></pre>
+
+<p>However, 5 of the 10 factors are dependent of the other half. If we only use 5 
+factors:</p>
+
+<pre><code>&gt; ans = 3*mpone(treats$x1)+5*mpone(treats$x2)+6*mpone(treats$x3)+
+    6*mpone(treats$x4)+6*mpone(treats$x5)+rnorm(32, sd=0.1)
+&gt; d=data.frame(treats, ans)
+&gt; d
+   x1 x2 x3 x4 x5        ans
+1   -  -  -  -  - -26.019996
+2   +  -  -  -  - -19.989807
+3   -  +  -  -  - -15.959934
+4   +  +  -  -  - -10.152213
+5   -  -  +  -  - -13.980209
+6   +  -  +  -  -  -8.089921
+7   -  +  +  -  -  -3.954413
+8   +  +  +  -  -   2.017681
+9   -  -  -  +  - -13.905559
+10  +  -  -  +  -  -7.979903
+11  -  +  -  +  -  -4.104608
+12  +  +  -  +  -   1.894599
+13  -  -  +  +  -  -2.078160
+14  +  -  +  +  -   3.912661
+15  -  +  +  +  -   8.171897
+16  +  +  +  +  -  14.058726
+17  -  -  -  -  + -14.118927
+18  +  -  -  -  +  -7.947522
+19  -  +  -  -  +  -3.877817
+20  +  +  -  -  +   1.824779
+21  -  -  +  -  +  -2.253540
+22  +  -  +  -  +   3.993494
+23  -  +  +  -  +   7.990219
+24  +  +  +  -  +  13.898773
+25  -  -  -  +  +  -2.134875
+26  +  -  -  +  +   4.097964
+27  -  +  -  +  +   8.101143
+28  +  +  -  +  +  13.991700
+29  -  -  +  +  +   9.910960
+30  +  -  +  +  +  15.919928
+31  -  +  +  +  +  19.920425
+32  +  +  +  +  +  26.028645
+</code></pre>
+
+<p>Now we can use <code>yates.effects()</code> with <code>aov()</code> to compute the yates effects of 
+the variables and their combination.</p>
+
+<pre><code>&gt; anova=aov(ans~x1*x2*x3*x4*x5, data=d)
+&gt; anova
+Call:
+   aov(formula = ans ~ x1 * x2 * x3 * x4 * x5, data = d)
+
+Terms:
+               x1        x2        x3        x4        x5     x1:x2
+Sum of Squares   286.6395  805.1383 1148.9797 1157.1044 1146.0617    0.0466
+Deg. of Freedom         1         1         1         1         1         1
+            x1:x3     x2:x3     x1:x4     x2:x4     x3:x4     x1:x5
+Sum of Squares     0.0020    0.0365    0.0031    0.0005    0.0000    0.0184
+Deg. of Freedom         1         1         1         1         1         1
+            x2:x5     x3:x5     x4:x5  x1:x2:x3  x1:x2:x4  x1:x3:x4
+Sum of Squares     0.0030    0.0202    0.0016    0.0153    0.0142    0.0040
+Deg. of Freedom         1         1         1         1         1         1
+         x2:x3:x4  x1:x2:x5  x1:x3:x5  x2:x3:x5  x1:x4:x5  x2:x4:x5
+Sum of Squares     0.0036    0.0242    0.0028    0.0217    0.0004    0.0001
+Deg. of Freedom         1         1         1         1         1         1
+         x3:x4:x5 x1:x2:x3:x4 x1:x2:x3:x5 x1:x2:x4:x5 x1:x3:x4:x5
+Sum of Squares     0.0002      0.0009      0.0062      0.0064      0.0015
+Deg. of Freedom         1           1           1           1           1
+        x2:x3:x4:x5 x1:x2:x3:x4:x5
+Sum of Squares       0.0125         0.0197
+Deg. of Freedom           1              1
+
+Estimated effects are balanced
+&gt; yates.effects(anova, data=d)
+        x1             x2             x3             x4             x5 
+   5.985810979   10.032063236   11.984258828   12.026555840   11.969031537 
+     x1:x2          x1:x3          x2:x3          x1:x4          x2:x4 
+  -0.076338893    0.015789883    0.067529233    0.019576080    0.007875363 
+     x3:x4          x1:x5          x2:x5          x3:x5          x4:x5 
+   0.001318775    0.047960628    0.019234758   -0.050201417    0.014247871 
+      x1:x2:x3       x1:x2:x4       x1:x3:x4       x2:x3:x4       x1:x2:x5 
+   0.043662259    0.042155230   -0.022467426    0.021107941   -0.054951052 
+      x1:x3:x5       x2:x3:x5       x1:x4:x5       x2:x4:x5       x3:x4:x5 
+   0.018632596   -0.052022389    0.006798353    0.002810317   -0.004369662 
+   x1:x2:x3:x4    x1:x2:x3:x5    x1:x2:x4:x5    x1:x3:x4:x5    x2:x3:x4:x5 
+  -0.010663323    0.027820592    0.028377545   -0.013506928   -0.039507956 
+x1:x2:x3:x4:x5 
+   0.049563695
+</code></pre>
+
+<p>And see that all variables contribute directly to the result, but seems that 
+they don't produce a combined effect.</p>
+
+<h3>Check that the data are consistent with the experimental assumptions.</h3>
+
+<p>The results are expected, as the variables are indenpendent.</p>
+
+<p><em>Analyze  and  interpret  the  results,  detect  effects  of  main  factors  and
+interactions.</em></p>
+
+<p>There is no interation between x1 to x5, but as we discovered previously, x6 to 
+x10 are linear combinations of the other half.</p>

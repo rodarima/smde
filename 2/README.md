@@ -260,14 +260,156 @@ Now you have an expression to generate new data (a simple method to obtain new
 values depending on the factors, the model). This model can be used to generate 
 data for the different scenarios that must be considered.
 
-Define a DOE to explore with what parametrization of the 10 factors the 
-answer obtains the best value (define what means best, i.e. maximize or 
-minimize the value).
+*Define a DOE to explore with what parametrization of the 10 factors the answer 
+obtains the best value (define what means best, i.e. maximize or minimize the 
+value).*
 
-WIP
+*Detect and analyze the interactions.*
 
-Detect and analyze the interactions.
+Let's imagine that our experiment is a chemical experiment. We have 10 compounds 
+in different quantities (the factors) and a result variable (ans) which measures 
+the quality of the final product. Let say we are building a phone screen, 
+varying the amounts of the components, and the quality is measured as the 
+resistance to impacts. The larger the answer variable the better, it means a 
+more durable phone.
 
-WIP
+### Set the objectives.
 
+Identify the main factors that determine the answer response.
+
+### Select the process variables.
+
+The quantity of the 10 compounds from x1 to x10.
+
+### Define an experimental design.
+
+A 2k experimental design as we have a simple model and we can generate the 
+response virtually free.
+
+### Execute the design.
+
+Let be -1 and +1 the 2 extreme values for the factors, represented by - and +.
+
+To generate the combinations we can use the package "dae" in R.
+
+	> library('dae')
+	> mp <- c("-", "+")
+	> fnames <- list(x1=mp, x2=mp, x3=mp, x4=mp, x5=mp, x6=mp,
+		x7=mp, x8=mp, x9=mp, x10=mp)
+	> treats <- fac.gen(generate = fnames, order="yates")
+	> head(treats)
+	  x1 x2 x3 x4 x5 x6 x7 x8 x9 x10
+	1  -  -  -  -  -  -  -  -  -   -
+	2  +  -  -  -  -  -  -  -  -   -
+	3  -  +  -  -  -  -  -  -  -   -
+	4  +  +  -  -  -  -  -  -  -   -
+	5  -  -  +  -  -  -  -  -  -   -
+	6  +  -  +  -  -  -  -  -  -   -
+	> tail(treats)
+	     x1 x2 x3 x4 x5 x6 x7 x8 x9 x10
+	1019  -  +  -  +  +  +  +  +  +   +
+	1020  +  +  -  +  +  +  +  +  +   +
+	1021  -  -  +  +  +  +  +  +  +   +
+	1022  +  -  +  +  +  +  +  +  +   +
+	1023  -  +  +  +  +  +  +  +  +   +
+	1024  +  +  +  +  +  +  +  +  +   +
+
+However, 5 of the 10 factors are dependent of the other half. If we only use 5 
+factors:
+
+	> ans = 3*mpone(treats$x1)+5*mpone(treats$x2)+6*mpone(treats$x3)+
+		6*mpone(treats$x4)+6*mpone(treats$x5)+rnorm(32,	sd=0.1)
+	> d=data.frame(treats, ans)
+	> d
+	   x1 x2 x3 x4 x5        ans
+	1   -  -  -  -  - -26.019996
+	2   +  -  -  -  - -19.989807
+	3   -  +  -  -  - -15.959934
+	4   +  +  -  -  - -10.152213
+	5   -  -  +  -  - -13.980209
+	6   +  -  +  -  -  -8.089921
+	7   -  +  +  -  -  -3.954413
+	8   +  +  +  -  -   2.017681
+	9   -  -  -  +  - -13.905559
+	10  +  -  -  +  -  -7.979903
+	11  -  +  -  +  -  -4.104608
+	12  +  +  -  +  -   1.894599
+	13  -  -  +  +  -  -2.078160
+	14  +  -  +  +  -   3.912661
+	15  -  +  +  +  -   8.171897
+	16  +  +  +  +  -  14.058726
+	17  -  -  -  -  + -14.118927
+	18  +  -  -  -  +  -7.947522
+	19  -  +  -  -  +  -3.877817
+	20  +  +  -  -  +   1.824779
+	21  -  -  +  -  +  -2.253540
+	22  +  -  +  -  +   3.993494
+	23  -  +  +  -  +   7.990219
+	24  +  +  +  -  +  13.898773
+	25  -  -  -  +  +  -2.134875
+	26  +  -  -  +  +   4.097964
+	27  -  +  -  +  +   8.101143
+	28  +  +  -  +  +  13.991700
+	29  -  -  +  +  +   9.910960
+	30  +  -  +  +  +  15.919928
+	31  -  +  +  +  +  19.920425
+	32  +  +  +  +  +  26.028645
+
+Now we can use `yates.effects()` with `aov()` to compute the yates effects of 
+the variables and their combination.
+
+	> anova=aov(ans~x1*x2*x3*x4*x5, data=d)
+	> anova
+	Call:
+	   aov(formula = ans ~ x1 * x2 * x3 * x4 * x5, data = d)
+
+	Terms:
+			       x1        x2        x3        x4        x5     x1:x2
+	Sum of Squares   286.6395  805.1383 1148.9797 1157.1044 1146.0617    0.0466
+	Deg. of Freedom         1         1         1         1         1         1
+			    x1:x3     x2:x3     x1:x4     x2:x4     x3:x4     x1:x5
+	Sum of Squares     0.0020    0.0365    0.0031    0.0005    0.0000    0.0184
+	Deg. of Freedom         1         1         1         1         1         1
+			    x2:x5     x3:x5     x4:x5  x1:x2:x3  x1:x2:x4  x1:x3:x4
+	Sum of Squares     0.0030    0.0202    0.0016    0.0153    0.0142    0.0040
+	Deg. of Freedom         1         1         1         1         1         1
+			 x2:x3:x4  x1:x2:x5  x1:x3:x5  x2:x3:x5  x1:x4:x5  x2:x4:x5
+	Sum of Squares     0.0036    0.0242    0.0028    0.0217    0.0004    0.0001
+	Deg. of Freedom         1         1         1         1         1         1
+			 x3:x4:x5 x1:x2:x3:x4 x1:x2:x3:x5 x1:x2:x4:x5 x1:x3:x4:x5
+	Sum of Squares     0.0002      0.0009      0.0062      0.0064      0.0015
+	Deg. of Freedom         1           1           1           1           1
+			x2:x3:x4:x5 x1:x2:x3:x4:x5
+	Sum of Squares       0.0125         0.0197
+	Deg. of Freedom           1              1
+
+	Estimated effects are balanced
+	> yates.effects(anova, data=d)
+		    x1             x2             x3             x4             x5 
+	   5.985810979   10.032063236   11.984258828   12.026555840   11.969031537 
+		 x1:x2          x1:x3          x2:x3          x1:x4          x2:x4 
+	  -0.076338893    0.015789883    0.067529233    0.019576080    0.007875363 
+		 x3:x4          x1:x5          x2:x5          x3:x5          x4:x5 
+	   0.001318775    0.047960628    0.019234758   -0.050201417    0.014247871 
+	      x1:x2:x3       x1:x2:x4       x1:x3:x4       x2:x3:x4       x1:x2:x5 
+	   0.043662259    0.042155230   -0.022467426    0.021107941   -0.054951052 
+	      x1:x3:x5       x2:x3:x5       x1:x4:x5       x2:x4:x5       x3:x4:x5 
+	   0.018632596   -0.052022389    0.006798353    0.002810317   -0.004369662 
+	   x1:x2:x3:x4    x1:x2:x3:x5    x1:x2:x4:x5    x1:x3:x4:x5    x2:x3:x4:x5 
+	  -0.010663323    0.027820592    0.028377545   -0.013506928   -0.039507956 
+	x1:x2:x3:x4:x5 
+	   0.049563695
+
+And see that all variables contribute directly to the result, but seems that 
+they don't produce a combined effect.
+
+### Check that the data are consistent with the experimental assumptions.
+
+The results are expected, as the variables are indenpendent.
+
+*Analyze  and  interpret  the  results,  detect  effects  of  main  factors  and
+interactions.*
+
+There is no interation between x1 to x5, but as we discovered previously, x6 to 
+x10 are linear combinations of the other half.
 
