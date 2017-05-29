@@ -405,7 +405,32 @@ they don't produce a combined effect.
 
 ### Check that the data are consistent with the experimental assumptions.
 
-The results are expected, as the variables are indenpendent.
+All test pass with the experimental data, so we accept the assumptions of
+normality, homoscedasticity and independency.
+
+	a = aov(ans~., data=exp_data)
+	> bptest(a)
+
+		studentized Breusch-Pagan test
+
+	data:  a
+	BP = 7.1362, df = 5, p-value = 0.2107
+
+	> shapiro.test(residuals(a))
+
+		Shapiro-Wilk normality test
+
+	data:  residuals(a)
+	W = 0.99832, p-value = 0.4414
+
+	> dwtest(a)
+
+		Durbin-Watson test
+
+	data:  a
+	DW = 2.0051, p-value = 0.1798
+	alternative hypothesis: true autocorrelation is greater than 0
+
 
 *Analyze  and  interpret  the  results,  detect  effects  of  main  factors  and
 interactions.*
